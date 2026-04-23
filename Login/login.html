@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="card">
+        <div class="logo-row">
+            <svg class="logo-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span class="logo-text">Testing Environment</span>
+        </div>
+
+        <h1>Sign In</h1>
+        <p></p>
+
+        <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@dtechhs.org" autocomplete="email" />
+            <div class="domain-badge">@dtechhs.org only</div>
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+        </div>
+
+        <div class="error-msg" id="error-msg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="error-text"></span>
+        </div>
+
+        <button class="btn-sign-in" id="sign-in-btn">
+            <div class="spinner"></div>
+            <span class="btn-label">Sign In</span>
+        </button>
+
+        <div class="first-time-note">
+            <strong>First time?</strong> If your account hasn't been set up yet, the password you enter will become your permanent password.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <script src="../config.js"></script>
+    <script src="../shared.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

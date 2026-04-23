@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Coding Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="Main/index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <div class="nav-left">
+            <svg class="home-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+        </div>
+        <div class="nav-center"></div>
+        <div class="nav-right">
+            <button id="theme-toggle" class="theme-btn">
+                <svg id="moon-icon" viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg id="sun-icon" viewBox="0 0 24 24" style="display: none;">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+
+            <div class="profile-wrapper">
+                <button class="profile-icon" id="profile-btn">
+                    <svg class="profile-default-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    <span class="profile-initials" id="profile-initials"></span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="dropdown-email" id="dropdown-email">
+                        <span>Signed in as</span>
+                        <span id="dropdown-email-text"></span>
+                    </div>
+                    <button class="btn-logout" id="logout-btn">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Log out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div id="left-split" class="split">
+            <div id="problem-panel" class="panel">
+                <div class="panel-content">
+                    <h1>01. Two Sum</h1>
+                    <h2 class="sub-heading"># Python</h2>
+                    <p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
+                    <p>You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the same element twice.</p>
+                    <div class="instructions-banner">Instructions</div>
+                    <div class="example-box">
+Input: nums = [2,7,11,15], target = 9
+Output: [0,1]
+                    </div>
+                    <div class="example-box">
+Input: nums = [3,2,4], target = 6
+Output: [1,2]
+                    </div>
+                </div>
+            </div>
+            <div id="canvas-panel" class="panel">
+                <div class="panel-header flex-header">
+                    <span>Visualization Canvas</span>
+                    <button id="min-canvas" class="close-btn" title="Minimize/Restore">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M2 7.5h12v1H2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="canvas-container" class="panel-content canvas-container">
+                    <canvas id="myCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        <div id="right-split" class="split">
+            <div id="editor-panel" class="panel">
+                <div class="panel-header flex-header">
+                    <span>🐍 script.py</span>
+                </div>
+                <div id="editor-container" class="panel-content">
+                    <div id="monaco-editor"></div>
+                </div>
+                <div class="editor-action-bar">
+                    <button class="btn-run" id="run-btn" disabled>
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        Run
+                    </button>
+                    <button class="btn-submit" id="submit-btn" disabled>
+                        Submit answer
+                    </button>
+                </div>
+            </div>
+            <div id="terminal-panel" class="panel terminal-override">
+                <div class="panel-header">Terminal</div>
+                <pre id="terminal-content">Loading Python engine...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="shared.js"></script>
+    <script src="Main/index.js"></script>
+</body>
+</html>

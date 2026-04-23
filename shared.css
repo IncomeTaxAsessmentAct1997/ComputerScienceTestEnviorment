@@ -1,0 +1,49 @@
+:root {
+    --bg-base: #222224;
+    --bg-panel: #2a2a2d;
+    --bg-terminal: #1e1e20;
+    --border-color: #3f3f42;
+    --text-main: #cccccc;
+    --text-heading: #ffffff;
+    --accent-green: #2ecc71;
+    --accent-green-hover: #27ae60;
+    --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --instructions-bg: #353538;
+    --example-bg: rgba(0,0,0,0.2);
+    --btn-run-bg: #353538;
+    --btn-run-border: #4a4a4d;
+    --btn-run-text: #ffffff;
+    --btn-run-hover: #454548;
+    --canvas-dot: #444444;
+    --code-bg: rgba(0,0,0,0.3);
+    --sub-heading: #ffffff;
+    --term-out: #2ecc71;
+    --term-err: #ff7b72;
+    --panel-shadow: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode {
+    --bg-base: #f3f4f6;
+    --bg-panel: #ffffff;
+    --bg-terminal: #f8fafc;
+    --border-color: #e5e7eb;
+    --text-main: #4b5563;
+    --text-heading: #111827;
+    --instructions-bg: #f3f4f6;
+    --example-bg: #f9fafb;
+    --btn-run-bg: #f3f4f6;
+    --btn-run-border: #d1d5db;
+    --btn-run-text: #374151;
+    --btn-run-hover: #e5e7eb;
+    --canvas-dot: #cccccc;
+    --code-bg: rgba(0,0,0,0.05);
+    --sub-heading: #374151;
+    --term-out: #16a34a;
+    --term-err: #dc2626;
+    --panel-shadow: rgba(0, 0, 0, 0.05);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
