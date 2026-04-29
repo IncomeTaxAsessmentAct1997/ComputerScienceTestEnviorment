@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Coding Challenge</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Test Environment</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="shared.css">
-    <link rel="stylesheet" href="Main/index.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodMain/v0.25.0/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.js"></script>
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="ide.css">
 </head>
 <body>
     <div class="navbar">
@@ -21,23 +20,6 @@
         </div>
         <div class="nav-center"></div>
         <div class="nav-right">
-            <button id="theme-toggle" class="theme-btn">
-                <svg id="moon-icon" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-                <svg id="sun-icon" viewBox="0 0 24 24" style="display: none;">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-            </button>
-
             <div class="profile-wrapper">
                 <button class="profile-icon" id="profile-btn">
                     <svg class="profile-default-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -66,30 +48,11 @@
     <div class="main-container">
         <div id="left-split" class="split">
             <div id="problem-panel" class="panel">
-                <div class="panel-content">
-                    <h1>01. Two Sum</h1>
-                    <h2 class="sub-heading"># Python</h2>
-                    <p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
-                    <p>You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the same element twice.</p>
-                    <div class="instructions-banner">Instructions</div>
-                    <div class="example-box">
-Input: nums = [2,7,11,15], target = 9
-Output: [0,1]
-                    </div>
-                    <div class="example-box">
-Input: nums = [3,2,4], target = 6
-Output: [1,2]
-                    </div>
-                </div>
+                <div class="panel-content"></div>
             </div>
             <div id="canvas-panel" class="panel">
                 <div class="panel-header flex-header">
                     <span>Visualization Canvas</span>
-                    <button id="min-canvas" class="close-btn" title="Minimize/Restore">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M2 7.5h12v1H2z"/>
-                        </svg>
-                    </button>
                 </div>
                 <div id="canvas-container" class="panel-content canvas-container">
                     <canvas id="myCanvas"></canvas>
@@ -106,26 +69,33 @@ Output: [1,2]
                 </div>
                 <div class="editor-action-bar">
                     <button class="btn-run" id="run-btn" disabled>
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>
                         Run
                     </button>
-                    <button class="btn-submit" id="submit-btn" disabled>
-                        Submit answer
-                    </button>
+                    <button class="btn-submit" id="submit-btn" disabled>Submit answer</button>
                 </div>
             </div>
             <div id="terminal-panel" class="panel terminal-override">
-                <div class="panel-header">Terminal</div>
-                <pre id="terminal-content">Loading Python engine...</pre>
+                <div class="terminal-titlebar">
+                    <span class="terminal-title">bash — python3</span>
+                    <button class="terminal-close-btn" id="terminal-close-btn" title="Close">&#x2715;</button>
+                </div>
+                <div class="terminal-body" id="terminal-body">
+                    <div id="terminal-output"></div>
+                    <div class="term-input-line" id="term-input-line">
+                        <span class="term-prompt" id="term-input-prompt">user@pyenv:~$</span>
+                        <input type="text" id="term-input" class="term-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <script src="shared.js"></script>
-    <script src="Main/index.js"></script>
+    <script src="../config.js"></script>
+    <script src="../shared.js"></script>
+    <script src="terminal.js"></script>
+    <script src="python.js"></script>
+    <script src="ide.js"></script>
 </body>
 </html>

@@ -1,8 +1,14 @@
 const { createClient } = supabase;
-const db = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
+const db = (ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+})
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (getSession()) window.location.replace('../Main/index.html');
+    if (getSession()) window.location.replace('..//home.html');
 
     const email_input = document.getElementById('email');
     const password_input = document.getElementById('password');
@@ -65,6 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         saveSession(email);
-        window.location.replace('../Main/index.html');
+        window.location.replace('../Home/home.html');
     }
 });
