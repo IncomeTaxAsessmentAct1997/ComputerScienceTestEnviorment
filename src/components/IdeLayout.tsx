@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Split from 'react-split';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { supabase } from '@/lib/supabase';
 import { idbGet, idbSet, idbGetLastFile, idbSetLastFile, idbEnsureMainPy } from '@/lib/vfs';
-import Navbar from './Navbar';
-import PythonRunner, { usePythonRunner } from './PythonRunner';
+import PythonRunnerProvider, { usePythonRunner } from './PythonRunnerContext';
 import QuestionPanel from './QuestionPanel';
 import AdminQuestionPanel from './AdminQuestionPanel';
 import type { TerminalHandle } from './TerminalPanel';
@@ -37,17 +33,15 @@ interface Problem {
   content: string | null;
 }
 
-function EditorSection({
-  problemId,
-  terminalRef,
-  terminalVisible,
-  setTerminalVisible,
-}: {
+interface EditorSectionProps {
   problemId: string;
+  isAdmin: boolean;
   terminalRef: React.RefObject<TerminalHandle | null>;
   terminalVisible: boolean;
   setTerminalVisible: (v: boolean) => void;
-}) {
+}
+
+function EditorSection({ problemId, isAdmin, terminalRef, terminalVisible, setTerminalVisible }: EditorSectionProps) {
   const { runPython, isLoading, isRunning } = usePythonRunner();
   const [editorValue, setEditorValue] = useState('');
   const [editorTabName, setEditorTabName] = useState(DEFAULT_FILE);
@@ -62,9 +56,7 @@ function EditorSection({
 
   useEffect(() => { problemIdRef.current = problemId; }, [problemId]);
 
-  useEffect(() => {
-    initVfs();
-  }, [problemId]);
+  useEffect(() => { initVfs(); }, [problemId]);
 
   async function initVfs() {
     setReady(false);
@@ -187,6 +179,10 @@ function EditorSection({
         <TerminalPanel
           ref={terminalRef}
           problemId={problemId}
+          isAdmin={isAdmin}
+          isReady={isReady}
+          isRunning={isRunning}
+          runPython={runPython}
           currentFile={currentFileRef.current}
           onGetEditorValue={() => editorRef.current?.getValue() ?? editorValue}
           onOpenFile={openFileInEditor}
@@ -197,92 +193,55 @@ function EditorSection({
   );
 }
 
-function IdeContent({
-  problem,
-  problemId,
-  isAdmin,
-  email,
-}: {
+interface IdeLayoutProps {
   problem: Problem | null;
   problemId: string;
   isAdmin: boolean;
-  email: string;
-}) {
-  const terminalRef = useRef<TerminalHandle>(null);
+}
+
+interface IdeContentProps extends IdeLayoutProps {
+  terminalRef: React.RefObject<TerminalHandle | null>;
+}
+
+function IdeContent({ problem, problemId, isAdmin, terminalRef }: IdeContentProps) {
   const [terminalVisible, setTerminalVisible] = useState(true);
 
   return (
-    <PythonRunner terminalRef={terminalRef}>
-      <Split className="main-container" direction="horizontal" sizes={[45, 55]} minSize={250} gutterSize={8}>
-        <div className="split-wrapper">
-          {isAdmin
-            ? <AdminQuestionPanel problem={problem} problemId={problemId} />
-            : <QuestionPanel problem={problem} />
-          }
-        </div>
-        <EditorSection
-          problemId={problemId}
-          terminalRef={terminalRef}
-          terminalVisible={terminalVisible}
-          setTerminalVisible={setTerminalVisible}
-        />
-      </Split>
-    </PythonRunner>
+    <Split className="main-container" direction="horizontal" sizes={[45, 55]} minSize={250} gutterSize={8}>
+      <div className="split-wrapper">
+        {isAdmin
+          ? <AdminQuestionPanel problem={problem} problemId={problemId} />
+          : <QuestionPanel problem={problem} />
+        }
+      </div>
+      <EditorSection
+        problemId={problemId}
+        isAdmin={isAdmin}
+        terminalRef={terminalRef}
+        terminalVisible={terminalVisible}
+        setTerminalVisible={setTerminalVisible}
+      />
+    </Split>
   );
 }
 
-export default function IdePage() {
-  const email = useRequireAuth();
-  const params = useParams<{ id: string }>();
-  const problemId = params?.id || 'default';
-
-  const [problem, setProblem] = useState<Problem | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    if (!email) return;
-    loadProblem(email);
-  }, [email, problemId]);
-
-  async function loadProblem(userEmail: string) {
-    const { data: student } = await supabase
-      .from('Students')
-      .select('Admin')
-      .eq('Email', userEmail)
-      .maybeSingle();
-
-    setIsAdmin(student?.Admin === true);
-    setAuthReady(true);
-
-    if (!problemId || problemId === 'default') return;
-
-    const { data: prob } = await supabase
-      .from('problems')
-      .select('id, title, content')
-      .eq('id', problemId)
-      .maybeSingle();
-
-    if (prob) setProblem(prob);
-  }
-
-  if (!authReady) return <Navbar email={email} />;
+export default function IdeLayout({ problem, problemId, isAdmin }: IdeLayoutProps) {
+  const terminalRef = useRef<TerminalHandle>(null);
 
   return (
-    <>
+    <PythonRunnerProvider terminalRef={terminalRef}>
       <style>{`
         .split-wrapper { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
         .split-wrapper > .panel { height: calc(100% - 8px); margin: 4px; }
         .terminal-wrapper > .panel { height: calc(100% - 8px); margin: 4px; }
         .editor-content-wrapper:hover .editor-topleft-controls { opacity: 1 !important; pointer-events: auto !important; }
       `}</style>
-      <Navbar email={email} />
       <IdeContent
         problem={problem}
         problemId={problemId}
         isAdmin={isAdmin}
-        email={email}
+        terminalRef={terminalRef}
       />
-    </>
+    </PythonRunnerProvider>
   );
 }

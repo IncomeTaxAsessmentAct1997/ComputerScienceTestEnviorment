@@ -19,21 +19,19 @@ export interface TerminalHandle {
   getPrompt: () => string;
 }
 
-interface TerminalProps {
+interface TerminalPanelProps {
   problemId: string;
-  pyodideReady: boolean;
-  pyodide: any;
-  /** True for admin users — enables readonly file management commands */
   isAdmin?: boolean;
-  onRunFile: (filename: string) => Promise<void>;
-  onRunInline: (code: string) => Promise<void>;
+  isReady: boolean;
+  isRunning: boolean;
+  runPython: (code: string) => Promise<void>;
+  currentFile: string;
   onGetEditorValue: () => string;
   onOpenFile: (filename: string, content: string) => void;
   onClose: () => void;
 }
 
 const PROMPT = 'py-env $';
-
 let lineId = 0;
 
 const inputStyle: React.CSSProperties = {
@@ -54,8 +52,8 @@ const inputStyle: React.CSSProperties = {
   width: '100%',
 };
 
-const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
-  { problemId, pyodideReady, isAdmin = false, onRunFile, onRunInline, onOpenFile, onClose },
+const TerminalPanel = forwardRef<TerminalHandle, TerminalPanelProps>(function TerminalPanel(
+  { problemId, isAdmin = false, isReady, isRunning, runPython, currentFile, onGetEditorValue, onOpenFile, onClose },
   ref
 ) {
   const [lines, setLines] = useState<TermLine[]>([]);
@@ -110,6 +108,22 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
     return tokens;
   }
 
+  async function runPythonFile(filename: string) {
+    if (!isReady) { printErr('Python not ready yet.'); return; }
+    if (isRunning) { printErr('Python is already running.'); return; }
+    let source: string;
+    if (filename === currentFile) {
+      source = onGetEditorValue();
+      await idbSet(problemId, filename, source);
+    } else {
+      const content = await idbGet(problemId, filename);
+      if (content === undefined) { printErr(`python3: '${filename}': no such file`); return; }
+      source = content;
+    }
+    await runPython(source);
+    printLine('');
+  }
+
   async function handleCommand(raw: string) {
     raw = raw.trim();
     if (!raw) return;
@@ -121,29 +135,42 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
     const args = tokenize(raw);
     const cmd = args[0];
 
-    // ── built-ins ───────────────────────────────────────────────────────────
-
     if (cmd === 'clear' && !args[1]) { setLines([]); return; }
 
     if (cmd === 'help') {
-      const baseHelp = 'list · open <file> · python3 <file> · python3 -c "code" · clear';
-      const adminHelp = ' · create <file> [readonly] · delete <file> · clear <file>';
-      printInfo(isAdmin ? baseHelp + adminHelp : baseHelp);
+      const studentCommands: [string, string][] = [
+        ['list', 'List all files in the workspace'],
+        ['open <file>', 'Open a file in the editor'],
+        ['python3 <file>', 'Run a Python file'],
+        ['python3 -c "code"', 'Execute Python inline'],
+        ['clear', 'Clear terminal output'],
+        ['help', 'Show this help'],
+      ];
+      const adminCommands: [string, string][] = [
+        ['create <file>', 'Create a new empty file'],
+        ['create <file> readonly', 'Create a file students cannot edit'],
+        ['set <file> readonly true|false', 'Toggle readonly on a file'],
+        ['delete <file>', 'Permanently delete a file'],
+        ['clear <file>', 'Empty a file\'s contents'],
+      ];
+      const allCommands = isAdmin ? [...studentCommands, ...adminCommands] : studentCommands;
+      allCommands.forEach(([name, desc]) => {
+        addLine(
+          `<span style="color:var(--accent-green);font-family:var(--font-mono);font-size:12px;">${esc(name)}</span>` +
+          `<span style="color:#555;font-size:12px;margin-left:12px;">${esc(desc)}</span>`,
+          'term-info'
+        );
+      });
       return;
     }
 
-    // ── list ────────────────────────────────────────────────────────────────
     if (cmd === 'list') {
       try {
         const files = await idbList(problemId);
         if (files.length === 0) {
           printInfo('No files.');
         } else {
-          // No readonly badge shown — students just experience the restriction,
-          // admins set it via the create command and don't need a visual reminder.
-          for (const f of files.sort()) {
-            addLine(`<span class="term-file">${esc(f)}</span>`);
-          }
+          files.sort().forEach(f => addLine(`<span class="term-file">${esc(f)}</span>`));
         }
       } catch (e: any) {
         printErr(e?.message || 'list failed');
@@ -151,7 +178,6 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
       return;
     }
 
-    // ── open ────────────────────────────────────────────────────────────────
     if (cmd === 'open') {
       if (!args[1]) { printErr('open: missing filename'); return; }
       try {
@@ -164,71 +190,84 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
       return;
     }
 
-    // ── admin-only commands ─────────────────────────────────────────────────
-
-    if (cmd === 'create') {
-      if (!isAdmin) { printErr(`${cmd}: not found`); return; }
-      if (!args[1]) { printErr('create: missing filename'); return; }
-      const name = args[1];
-      const makeReadonly = args[2] === 'readonly';
-      try {
-        const existing = await idbGet(problemId, name);
-        if (existing === undefined) await idbSet(problemId, name, '');
-        if (makeReadonly) await idbSetReadonly(problemId, name, true);
-        // No confirmation message — keep UI neutral
-      } catch (e: any) {
-        printErr(e?.message || 'create failed');
-      }
-      return;
-    }
-
-    if (cmd === 'delete') {
-      if (!isAdmin) { printErr(`${cmd}: not found`); return; }
-      if (!args[1]) { printErr('delete: missing filename'); return; }
-      const name = args[1];
-      try {
-        const ro = await idbIsReadonly(problemId, name);
-        if (ro) { printErr(`delete: '${name}' is readonly`); return; }
-        const existing = await idbGet(problemId, name);
-        if (existing === undefined) { printErr(`delete: '${name}' not found`); return; }
-        await idbDelete(problemId, name);
-      } catch (e: any) {
-        printErr(e?.message || 'delete failed');
-      }
-      return;
-    }
-
-    // clear <file> (admin only)
-    if (cmd === 'clear' && args[1]) {
-      if (!isAdmin) { printErr(`${cmd}: not found`); return; }
-      const name = args[1];
-      try {
-        const ro = await idbIsReadonly(problemId, name);
-        if (ro) { printErr(`clear: '${name}' is readonly`); return; }
-        const existing = await idbGet(problemId, name);
-        if (existing === undefined) { printErr(`clear: '${name}' not found`); return; }
-        await idbSet(problemId, name, '');
-        onOpenFile(name, '');
-      } catch (e: any) {
-        printErr(e?.message || 'clear failed');
-      }
-      return;
-    }
-
-    // ── python ──────────────────────────────────────────────────────────────
     if (cmd === 'python3' || cmd === 'python') {
-      if (!pyodideReady) { printErr('Python not ready yet.'); return; }
+      if (!isReady) { printErr('Python not ready yet.'); return; }
       if (args[1] === '-c' && args[2]) {
-        await onRunInline(args.slice(2).join(' '));
+        if (isRunning) { printErr('Python is already running.'); return; }
+        await runPython(args.slice(2).join(' '));
+        printLine('');
       } else if (args[1]) {
-        await onRunFile(args[1]);
+        await runPythonFile(args[1]);
       } else {
         printErr('Usage: python3 <file>  or  python3 -c "code"');
       }
       return;
     }
 
-    printErr(`${cmd}: not found`);
+    if (cmd === 'create') {
+      if (!isAdmin) { printErr(`${cmd}: command not found`); return; }
+      if (!args[1]) { printErr('create: missing filename'); return; }
+      const makeReadonly = args[2] === 'readonly';
+      try {
+        const existing = await idbGet(problemId, args[1]);
+        if (existing === undefined) await idbSet(problemId, args[1], '');
+        if (makeReadonly) await idbSetReadonly(problemId, args[1], true);
+      } catch (e: any) {
+        printErr(e?.message || 'create failed');
+      }
+      return;
+    }
+
+    if (cmd === 'set') {
+      if (!isAdmin) { printErr(`${cmd}: command not found`); return; }
+      const name = args[1];
+      const prop = args[2];
+      const val = args[3];
+      if (!name || prop !== 'readonly' || (val !== 'true' && val !== 'false')) {
+        printErr('Usage: set <file> readonly true|false');
+        return;
+      }
+      try {
+        const existing = await idbGet(problemId, name);
+        if (existing === undefined) { printErr(`set: '${name}' not found`); return; }
+        await idbSetReadonly(problemId, name, val === 'true');
+      } catch (e: any) {
+        printErr(e?.message || 'set failed');
+      }
+      return;
+    }
+
+    if (cmd === 'delete') {
+      if (!isAdmin) { printErr(`${cmd}: command not found`); return; }
+      if (!args[1]) { printErr('delete: missing filename'); return; }
+      try {
+        const ro = await idbIsReadonly(problemId, args[1]);
+        if (ro) { printErr(`delete: '${args[1]}' is readonly`); return; }
+        const existing = await idbGet(problemId, args[1]);
+        if (existing === undefined) { printErr(`delete: '${args[1]}' not found`); return; }
+        await idbDelete(problemId, args[1]);
+      } catch (e: any) {
+        printErr(e?.message || 'delete failed');
+      }
+      return;
+    }
+
+    if (cmd === 'clear' && args[1]) {
+      if (!isAdmin) { printErr(`${cmd}: command not found`); return; }
+      try {
+        const ro = await idbIsReadonly(problemId, args[1]);
+        if (ro) { printErr(`clear: '${args[1]}' is readonly`); return; }
+        const existing = await idbGet(problemId, args[1]);
+        if (existing === undefined) { printErr(`clear: '${args[1]}' not found`); return; }
+        await idbSet(problemId, args[1], '');
+        onOpenFile(args[1], '');
+      } catch (e: any) {
+        printErr(e?.message || 'clear failed');
+      }
+      return;
+    }
+
+    printErr(`${cmd}: command not found`);
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -259,13 +298,18 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
     }
   };
 
+  function handleClose() {
+    setLines([]);
+    onClose();
+  }
+
   return (
     <div className="panel terminal-override" id="terminal-panel">
       <div className="terminal-titlebar">
         <span className="terminal-title">terminal</span>
         <button
           title="Close"
-          onClick={onClose}
+          onClick={handleClose}
           onMouseEnter={e => { e.currentTarget.style.background = '#c42b1c'; e.currentTarget.style.color = '#fff'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-main)'; }}
           style={{
@@ -289,7 +333,6 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
             />
           ))}
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '2px', lineHeight: '20px' }}>
           <span style={{
             color: '#2ecc71', fontWeight: 600, fontFamily: 'var(--font-mono)',
@@ -315,4 +358,4 @@ const Terminal = forwardRef<TerminalHandle, TerminalProps>(function Terminal(
   );
 });
 
-export default Terminal;
+export default TerminalPanel;

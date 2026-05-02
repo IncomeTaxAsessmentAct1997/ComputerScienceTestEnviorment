@@ -1,14 +1,26 @@
-const SESSION_KEY = 'py_challenge_user';
-
-export function getSession(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(SESSION_KEY);
+export async function getSession(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/auth/session', { credentials: 'include' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.email || null;
+  } catch {
+    return null;
+  }
 }
 
-export function saveSession(email: string): void {
-  localStorage.setItem(SESSION_KEY, email);
+export async function saveSession(email: string): Promise<void> {
+  await fetch('/api/auth/session', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
 }
 
-export function clearSession(): void {
-  localStorage.removeItem(SESSION_KEY);
+export async function clearSession(): Promise<void> {
+  await fetch('/api/auth/session', {
+    method: 'DELETE',
+    credentials: 'include',
+  });
 }

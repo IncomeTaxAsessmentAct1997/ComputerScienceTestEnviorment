@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getSession, saveSession } from '@/lib/session';
 import bcrypt from 'bcryptjs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const ALLOWED_DOMAIN = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN!;
 const BCRYPT_ROUNDS = parseInt(process.env.NEXT_PUBLIC_BCRYPT_ROUNDS || '10');
@@ -17,7 +20,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (getSession()) router.replace('/home');
+    getSession().then(e => { if (e) router.replace('/home'); });
   }, [router]);
 
   const showError = (msg: string) => setError(msg);
@@ -54,7 +57,7 @@ export default function LoginPage() {
       if (!match) { showError('Incorrect email or password.'); setLoading(false); return; }
     }
 
-    saveSession(trimmedEmail);
+    await saveSession(trimmedEmail);
     router.replace('/home');
   };
 
@@ -68,32 +71,32 @@ export default function LoginPage() {
       </div>
 
       <h1>Sign In</h1>
-      <p />
+      <p style={{ marginBottom: '1.5rem' }} />
 
       <div className="field">
-        <label htmlFor="email">Email</label>
-        <input
+        <Label htmlFor="email">Email</Label>
+        <Input
           type="email"
           id="email"
           placeholder="you@dtechhs.org"
           autoComplete="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className={error ? 'error' : ''}
+          aria-invalid={!!error}
         />
         <div className="domain-badge">@dtechhs.org only</div>
       </div>
 
       <div className="field">
-        <label htmlFor="password">Password</label>
-        <input
+        <Label htmlFor="password">Password</Label>
+        <Input
           type="password"
           id="password"
           placeholder="Enter your password"
           autoComplete="current-password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className={error ? 'error' : ''}
+          aria-invalid={!!error}
           onKeyDown={e => { if (e.key === 'Enter') handleSignIn(); }}
         />
       </div>
@@ -107,10 +110,14 @@ export default function LoginPage() {
         </div>
       )}
 
-      <button className={`btn-sign-in${loading ? ' loading' : ''}`} disabled={loading} onClick={handleSignIn}>
+      <Button
+        className={`btn-sign-in w-full${loading ? ' loading' : ''}`}
+        disabled={loading}
+        onClick={handleSignIn}
+      >
         <div className="spinner" />
         <span className="btn-label">Sign In</span>
-      </button>
+      </Button>
 
       <div className="first-time-note">
         <strong>First time?</strong> If your account hasn&apos;t been set up yet, the password you enter will become your permanent password.

@@ -1,0 +1,118 @@
+.navbar {
+  height: 56px;
+  min-height: 56px;
+  background-color: var(--bg-base);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.nav-left  { display: flex; align-items: center; flex: 1; justify-content: flex-start; }
+.nav-center { display: flex; align-items: center; flex: 1; justify-content: center; }
+.nav-right { display: flex; align-items: center; flex: 1; justify-content: flex-end; gap: 16px; }
+
+.home-icon {
+  width: 24px;
+  height: 24px;
+  fill: #f59e0b;
+  cursor: pointer;
+  margin-right: 24px;
+  transition: transform 0.2s;
+}
+.home-icon:hover { transform: scale(1.1); }
+
+.profile-wrapper { position: relative; }
+
+.profile-icon {
+  width: 36px;
+  height: 36px;
+  background-color: var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+  outline: none;
+}
+.profile-icon:hover { background-color: var(--btn-run-hover); }
+.profile-icon svg { width: 20px; height: 20px; fill: var(--text-main); }
+
+.profile-icon.logged-in {
+  background-color: var(--accent-green);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.profile-icon.logged-in svg { display: none; }
+.profile-initials { display: none; }
+.profile-icon.logged-in .profile-initials { display: block; }
+
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 220px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  z-index: 1000;
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.profile-dropdown.open { display: block; }
+
+.dropdown-email {
+  padding: 10px 12px 8px;
+  font-size: 12px;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dropdown-email span {
+  display: block;
+  font-size: 11px;
+  color: var(--accent-green);
+  margin-bottom: 2px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.btn-logout {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #ff7b72;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.btn-logout:hover { background: rgba(255,123,114,0.1); }
+.btn-logout svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }

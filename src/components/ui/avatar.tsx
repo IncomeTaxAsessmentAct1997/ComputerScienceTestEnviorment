@@ -16,8 +16,8 @@ export default function Navbar({ email }: NavbarProps) {
   const router = useRouter();
   const initials = email ? email.split('@')[0].slice(0, 2).toUpperCase() : '';
 
-  const handleLogout = async () => {
-    await clearSession();
+  const handleLogout = () => {
+    clearSession();
     router.replace('/login');
   };
 
@@ -31,8 +31,10 @@ export default function Navbar({ email }: NavbarProps) {
       <div className="nav-center" />
       <div className="nav-right">
         <DropdownMenu>
-          <DropdownMenuTrigger className="profile-icon logged-in" style={{ border: 'none', cursor: 'pointer' }}>
-            <span className="profile-initials">{initials}</span>
+          <DropdownMenuTrigger className="cursor-pointer border-0 bg-transparent p-0 outline-none ring-0 focus:outline-none focus-visible:outline-none">
+            <button className="profile-icon logged-in">
+              <span className="profile-initials">{initials}</span>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" style={{ padding: '8px', minWidth: '220px' }}>
             <div className="dropdown-email">
