@@ -120,7 +120,7 @@ export default function LoginPage() {
       </Button>
 
       <div className="first-time-note">
-        <strong>First time?</strong> If your account hasn&apos;t been set up yet, the password you enter will become your permanent password.
+        <strong>First time?</strong>If your account hasn&apos;t been set up yet, the password you enter will become your permanent password.
       </div>
     </div>
   );

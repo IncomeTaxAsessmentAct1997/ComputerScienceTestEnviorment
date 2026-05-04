@@ -5,7 +5,7 @@ import { PythonProvider } from 'react-py';
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PythonProvider
-      packages={{ official: [], micropip: [] }}
+      packages={{ official: ['pyodide-http'], micropip: [] }}
       autoImportPackages={false}
     >
       {children}
