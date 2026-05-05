@@ -180,9 +180,9 @@
 
 .component-menu {
   position: absolute;
-  left: calc(100% + 8px);
-  top: 0;
-  transform: none;
+  /* Pre-set transform so menu renders centered from the start — no snap delay */
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -194,8 +194,8 @@
 }
 
 @keyframes menuPop {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: translateX(-50%) scale(0.95); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 
 .component-menu-header {
@@ -367,3 +367,15 @@
 
 .tippy-box { background: transparent !important; box-shadow: none !important; }
 .tippy-arrow { display: none !important; }
+
+/* Table column resize handle cursor */
+.tiptap-editor .column-resize-handle {
+  cursor: col-resize !important;
+}
+.tiptap-editor col.column-resize-handle {
+  cursor: col-resize !important;
+}
+.resize-cursor,
+.tiptap-editor .tableWrapper .column-resize-handle {
+  cursor: col-resize !important;
+}
