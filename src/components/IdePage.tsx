@@ -10,7 +10,7 @@ import { idbGet, idbSet, idbGetLastFile, idbSetLastFile, idbEnsureMainPy } from 
 import Navbar from './Navbar';
 import PythonRunner, { usePythonRunner } from './PythonRunner';
 import QuestionPanel from './QuestionPanel';
-import AdminQuestionPanel from './AdminQuestionPanel';
+import AdminQuestionPanel from './adminQuestionPanel/AdminQuestionPanel';
 import type { TerminalHandle } from './TerminalPanel';
 
 const TerminalPanel = dynamic(() => import('./TerminalPanel'), { ssr: false });

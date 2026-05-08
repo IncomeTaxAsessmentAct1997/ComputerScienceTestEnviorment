@@ -6,7 +6,7 @@ import Split from 'react-split';
 import { idbGet, idbSet, idbGetLastFile, idbSetLastFile, idbEnsureMainPy } from '@/lib/vfs';
 import PythonRunnerProvider, { usePythonRunner } from './PythonRunnerContext';
 import QuestionPanel from './QuestionPanel';
-import AdminQuestionPanel from './AdminQuestionPanel';
+import AdminQuestionPanel from './adminQuestionPanel/AdminQuestionPanel';
 import type { TerminalHandle } from './TerminalPanel';
 
 const TerminalPanel = dynamic(() => import('./TerminalPanel'), { ssr: false });
